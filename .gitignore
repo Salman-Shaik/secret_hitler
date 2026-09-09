@@ -1,0 +1,11 @@
+node_modules/
+.npm-cache/
+.next/
+.next-dev/
+.next-test/
+test-results/
+playwright-report/
+coverage/
+artifacts/
+.env*
+!.env.example
