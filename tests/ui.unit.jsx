@@ -103,7 +103,8 @@ test("layout contains bootstrap and children", () => {
   expect(
     tree.props.children[0].props.children.props.dangerouslySetInnerHTML.__html,
   ).toContain("sh-theme");
-  expect(metadata.title).toContain("Secret Hitler");
+  expect(metadata.title).toContain("Veiled Republic");
+  expect(metadata.icons.icon).toBe("/icon.svg");
 });
 test("landing create, name entry, invitation code cleaning, join and saved session clearing", async () => {
   await mount(null);

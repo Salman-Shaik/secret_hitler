@@ -3,6 +3,7 @@ node_modules/
 .next/
 .next-dev/
 .next-test/
+.vercel/
 test-results/
 playwright-report/
 coverage/

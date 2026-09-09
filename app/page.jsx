@@ -503,9 +503,9 @@ export default function Home() {
   return (
     <>
       <header>
-        <a className="brand" href="/">
-          SECRET<span>HITLER</span>
-          <i>THE DIGITAL EDITION</i>
+        <a className="brand" href="/" aria-label="Veiled Republic home">
+          VEILED<span>REPUBLIC</span>
+          <i>TRUST &amp; TREASON</i>
         </a>
         <nav>
           <ThemeSwitch />
@@ -878,14 +878,15 @@ export default function Home() {
       </main>
       <footer>
         <span>
-          SECRET HITLER <b> / </b> AN UNOFFICIAL DIGITAL ADAPTATION
+          VEILED REPUBLIC <b> / </b> UNOFFICIAL · NONCOMMERCIAL
         </span>
         <a
           href="https://www.secrethitler.com/"
           target="_blank"
           rel="noreferrer"
         >
-          Original game by Mike Boxleiter, Tommy Maranges & Mac Schubert ↗
+          Adapted from Secret Hitler by Mike Boxleiter, Tommy Maranges & Mac
+          Schubert ↗
         </a>
         <a
           href="https://creativecommons.org/licenses/by-nc-sa/4.0/"

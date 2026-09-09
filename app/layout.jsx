@@ -1,8 +1,10 @@
 import "./globals.css";
 export const metadata = {
-  title: "Secret Hitler — The Table",
+  title: "Veiled Republic — A Game of Trust & Treason",
+  applicationName: "Veiled Republic",
   description:
-    "A game of trust and treason. An unofficial online adaptation for 5–10 players.",
+    "A private table for 5–10 friends. A noncommercial, unofficial social deduction adaptation of Secret Hitler.",
+  icons: { icon: "/icon.svg" },
 };
 export default function Layout({ children }) {
   return (

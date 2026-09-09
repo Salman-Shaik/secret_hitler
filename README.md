@@ -1,10 +1,10 @@
-# Secret Hitler — The Digital Edition
+# Veiled Republic
 
 A React + Node monolith built with Next.js App Router. An unofficial, noncommercial adaptation with a paper-and-ink board interface, private rooms, secret roles, sealed ballots, legislation, all player-count-specific powers, vetoes, election chaos, and automatic victories. Supports 5–10 human players. Use a voice call or sit together for discussion; no voice/chat service is included.
 
 ## Run locally
 
-Requires Node.js 22 or later.
+Requires Node.js 22.
 
 ```sh
 npm install
@@ -22,12 +22,11 @@ Run `npm run test:coverage` for the enforced 100% application coverage gate, or 
 
 The header theme switch toggles light and dark mode and remembers your choice. Auto follows your operating system, including changes while the app is open; it is the default. Development and production use separate build folders. Browser tests use their own ports (3105 and 3199); see the test guide to override them.
 
-## Deploy to Vercel
+## Deploy through GitHub Actions
 
-1. Push this directory to a Git repository and import it into Vercel. Select the Next.js preset. It deploys the React UI and Node API together; no separate backend server is needed.
-2. Create an Upstash Redis database (or add Upstash from Vercel Marketplace).
-3. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to the Vercel project environment. Never prefix these with `NEXT_PUBLIC_`. See `.env.example`.
-4. Deploy. Create a room and test joining from a second device.
+Create a new Vercel Next.js project named **veiled-republic**. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to its Production environment, then add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` as GitHub Actions secrets. See the [step-by-step deployment guide](docs/DEPLOYMENT.md) for setup links and how to disable duplicate deployments from Vercel's Git integration.
+
+The **Test and deploy** workflow runs coverage and E2E checks, then deploys successful `main` revisions using the Vercel CLI. Pull requests only run tests. You can trigger the workflow manually after adding the secrets. React and the Node API deploy together; no separate backend is required.
 
 `vercel.json` selects Next.js, a locked `npm ci` install, and the production build. Node.js 22 is pinned in `package.json`. Keep `NEXT_DIST_DIR`, `TEST_PORT`, `TEST_REDIS_PORT`, and test-only Redis credentials out of Vercel environment settings. Production uses `.next`; `.next-test` is only for local/CI tests. Before uploading, run `npm run test:all` and `npm run build`. No deployment has been performed by this repository setup.
 
@@ -43,7 +42,7 @@ The room host starts the game once 5–10 players have joined. Every player ackn
 
 Original game: **Secret Hitler**, created by **Mike Boxleiter, Tommy Maranges, and Mac Schubert**, © Goat, Wolf & Cabbage. https://www.secrethitler.com/
 
-This adaptation changes the presentation to a responsive web interface and automates setup, hidden-information delivery, and rules enforcement. It is unofficial and not endorsed by the original creators. No original illustration files are included.
+This adaptation adds the Veiled Republic name, an original ballot favicon, a responsive web interface, and automated setup, hidden-information delivery, and rules enforcement. It is unofficial and not endorsed by the original creators. No original illustration files are included. The new branding does not remove the original license requirements or establish trademark clearance. See [LICENSE.md](LICENSE.md).
 
 This adaptation is released under **Creative Commons Attribution–NonCommercial–ShareAlike 4.0 International**, matching the original game. https://creativecommons.org/licenses/by-nc-sa/4.0/
 

@@ -1,5 +1,5 @@
 {
-  "name": "secret-hitler-table",
+  "name": "veiled-republic",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -32,9 +32,11 @@
     "@vitest/coverage-v8": "^5.0.0",
     "jsdom": "^29.1.1",
     "prettier": "^3.9.6",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "yaml": "^2.9.0"
   },
   "engines": {
     "node": "22.x"
-  }
+  },
+  "license": "CC-BY-NC-SA-4.0"
 }
