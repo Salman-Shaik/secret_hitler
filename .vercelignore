@@ -1,0 +1,14 @@
+.git/
+.agents/
+.npm-cache/
+.next/
+.next-dev/
+.next-test/
+.vercel/
+node_modules/
+coverage/
+artifacts/
+playwright-report/
+test-results/
+.env*
+skills-lock.json
