@@ -503,8 +503,8 @@ export default function Home() {
   return (
     <>
       <header>
-        <a className="brand" href="/" aria-label="Veiled Republic home">
-          VEILED<span>REPUBLIC</span>
+        <a className="brand" href="/" aria-label="Secret Hitler home">
+          SECRET<span>HITLER</span>
           <i>TRUST &amp; TREASON</i>
         </a>
         <nav>
@@ -878,7 +878,7 @@ export default function Home() {
       </main>
       <footer>
         <span>
-          VEILED REPUBLIC <b> / </b> UNOFFICIAL · NONCOMMERCIAL
+          SECRET HITLER <b> / </b> UNOFFICIAL · NONCOMMERCIAL
         </span>
         <a
           href="https://www.secrethitler.com/"

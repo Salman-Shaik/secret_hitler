@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test("distinct branding and favicon are served with original-game attribution", async ({
+test("game name and favicon are served with original-game attribution", async ({
   page,
   request,
 }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("Veiled Republic — A Game of Trust & Treason");
+  await expect(page).toHaveTitle("Secret Hitler — A Game of Trust & Treason");
   await expect(
-    page.getByRole("link", { name: "Veiled Republic home" }),
+    page.getByRole("link", { name: "Secret Hitler home" }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Adapted from Secret Hitler by/ }),

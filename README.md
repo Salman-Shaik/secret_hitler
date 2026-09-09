@@ -1,4 +1,4 @@
-# Veiled Republic
+# Secret Hitler
 
 A React + Node monolith built with Next.js App Router. An unofficial, noncommercial adaptation with a paper-and-ink board interface, private rooms, secret roles, sealed ballots, legislation, all player-count-specific powers, vetoes, election chaos, and automatic victories. Supports 5–10 human players. Use a voice call or sit together for discussion; no voice/chat service is included.
 
@@ -24,7 +24,7 @@ The header theme switch toggles light and dark mode and remembers your choice. A
 
 ## Deploy through GitHub Actions
 
-Create a new Vercel Next.js project named **veiled-republic**. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to its Production environment, then add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` as GitHub Actions secrets. See the [step-by-step deployment guide](docs/DEPLOYMENT.md) for setup links and how to disable duplicate deployments from Vercel's Git integration.
+Create a new Vercel Next.js project named **secret-hitler-table**. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to its Production environment, then add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` as GitHub Actions secrets. See the [step-by-step deployment guide](docs/DEPLOYMENT.md) for setup links and how to disable duplicate deployments from Vercel's Git integration.
 
 The **Test and deploy** workflow runs coverage and E2E checks, then deploys successful `main` revisions using the Vercel CLI. Pull requests only run tests. You can trigger the workflow manually after adding the secrets. React and the Node API deploy together; no separate backend is required.
 
@@ -42,7 +42,7 @@ The room host starts the game once 5–10 players have joined. Every player ackn
 
 Original game: **Secret Hitler**, created by **Mike Boxleiter, Tommy Maranges, and Mac Schubert**, © Goat, Wolf & Cabbage. https://www.secrethitler.com/
 
-This adaptation adds the Veiled Republic name, an original ballot favicon, a responsive web interface, and automated setup, hidden-information delivery, and rules enforcement. It is unofficial and not endorsed by the original creators. No original illustration files are included. The new branding does not remove the original license requirements or establish trademark clearance. See [LICENSE.md](LICENSE.md).
+This adaptation retains the original game's name and adds an original ballot favicon, a responsive web interface, and automated setup, hidden-information delivery, and rules enforcement. It is intended for noncommercial play with friends, is unofficial, and is not endorsed by the original creators. No original illustration files are included. See [LICENSE.md](LICENSE.md).
 
 This adaptation is released under **Creative Commons Attribution–NonCommercial–ShareAlike 4.0 International**, matching the original game. https://creativecommons.org/licenses/by-nc-sa/4.0/
 

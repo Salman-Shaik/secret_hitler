@@ -1,10 +1,10 @@
-# Deploy Veiled Republic with GitHub Actions
+# Deploy Secret Hitler with GitHub Actions
 
 The workflow `.github/workflows/tests.yml` tests every push and pull request. Only a successful run on `main` may deploy production. You can also run **Test and deploy → Run workflow** manually on `main`. Pull requests and other branches never get production credentials or deploy production.
 
 ## One-time setup for a new Vercel project
 
-1. Sign in to [Vercel](https://vercel.com/new) and create a Next.js project named **veiled-republic**. Select `Salman-Shaik/secret_hitler` if importing the repository. Alternatively, use `npx vercel link` in this repository to create/link a project through the CLI. Follow the Vercel login prompts locally; never commit or send an access token in chat.
+1. Sign in to [Vercel](https://vercel.com/new) and create a Next.js project named **secret-hitler-table**. Select `Salman-Shaik/secret_hitler` if importing the repository. Alternatively, use `npx vercel link` in this repository to create/link a project through the CLI. Follow the Vercel login prompts locally; never commit or send an access token in chat.
 2. Set these **Production** environment variables in the Vercel project's **Settings → Environment Variables**, using an Upstash Redis database:
    - `UPSTASH_REDIS_REST_URL`
    - `UPSTASH_REDIS_REST_TOKEN`
@@ -38,6 +38,6 @@ Do not add `NEXT_DIST_DIR`, `TEST_PORT`, `TEST_REDIS_PORT`, or the test double's
 
 ## License before publishing
 
-Veiled Republic uses a distinct project name and an original favicon, but remains an unofficial adaptation of Secret Hitler. Keep the attribution and **CC BY-NC-SA 4.0** license. Renaming does not remove those obligations or establish trademark clearance. See [LICENSE.md](../LICENSE.md).
+This digital table retains the Secret Hitler name and uses an original favicon. It is an unofficial adaptation intended for noncommercial play with friends. Keep the creator attribution, unofficial notice, and **CC BY-NC-SA 4.0** license. See [LICENSE.md](../LICENSE.md).
 
 Workflow reference: [Vercel's official GitHub Actions guide](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel).

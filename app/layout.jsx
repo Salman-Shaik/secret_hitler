@@ -1,7 +1,7 @@
 import "./globals.css";
 export const metadata = {
-  title: "Veiled Republic — A Game of Trust & Treason",
-  applicationName: "Veiled Republic",
+  title: "Secret Hitler — A Game of Trust & Treason",
+  applicationName: "Secret Hitler",
   description:
     "A private table for 5–10 friends. A noncommercial, unofficial social deduction adaptation of Secret Hitler.",
   icons: { icon: "/icon.svg" },
