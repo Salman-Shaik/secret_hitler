@@ -1035,7 +1035,7 @@ footer b {
     display: none;
   }
 }
-@media (max-width: 800px) {
+@media (max-width: 1024px) {
   header {
     height: 85px;
     padding: 18px 5%;
@@ -1167,6 +1167,93 @@ footer b {
   }
   .rules-modal {
     padding: 27px 22px;
+  }
+}
+.workspace > *,
+.player,
+.policy {
+  min-width: 0;
+}
+.action-panel,
+.secret-panel,
+.ledger,
+.choices button {
+  overflow-wrap: anywhere;
+}
+.choices button {
+  max-width: 100%;
+}
+.rules-modal {
+  max-height: calc(100dvh - 48px);
+  overscroll-behavior: contain;
+}
+@media (max-width: 1024px), (pointer: coarse) {
+  button,
+  .icon-button,
+  .theme-system {
+    min-height: 44px;
+  }
+  .icon-button,
+  .theme-system {
+    min-width: 44px;
+    justify-content: center;
+  }
+  .theme-switch {
+    height: 44px;
+    flex-shrink: 0;
+  }
+  .theme-thumb {
+    top: 11px;
+  }
+  input {
+    font-size: 16px;
+  }
+}
+@media (max-width: 550px) {
+  header nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+  main {
+    padding-top: 26px;
+  }
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .slot b {
+    font-size: 11px;
+    letter-spacing: 0.4px;
+  }
+  .track-heading {
+    gap: 8px;
+  }
+  .track h2 span {
+    display: block;
+    margin-left: 0;
+  }
+  .track-foot,
+  .section-label,
+  .room-facts {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tracker {
+    flex-wrap: wrap;
+  }
+  .tracker-dots {
+    flex-shrink: 0;
+  }
+  .seal {
+    flex-shrink: 0;
+  }
+  .modal-backdrop {
+    padding: 12px;
+  }
+  .rules-modal {
+    max-height: calc(100dvh - 24px);
+    padding: 52px 22px 24px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
