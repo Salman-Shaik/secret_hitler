@@ -91,12 +91,70 @@ test("lobby host badge and ordinary modal Tab navigation", async () => {
   expect(screen.getByRole("dialog")).toBeVisible();
 });
 async function sent(type, extra = {}) {
+  const confirm = screen.queryByRole("button", { name: "Confirm selection" });
+  if (confirm) fireEvent.click(confirm);
   await waitFor(() =>
     expect(post).toHaveBeenCalledWith(
       expect.objectContaining({ type, ...extra }),
     ),
   );
+  await reactAct(async () => {});
 }
+test("selection popup can be cancelled, keeps focus inside, and clears on a newer table", async () => {
+  await mount(fixture("nominate"));
+  const target = current.players[1].name;
+  click(target);
+  expect(post).not.toHaveBeenCalled();
+  const dialog = screen.getByRole("dialog");
+  fireEvent.click(dialog);
+  expect(screen.getByRole("dialog")).toBeVisible();
+  click("Change selection");
+  expect(screen.queryByRole("dialog")).toBeNull();
+  click(target);
+  click("Cancel selection");
+  click(target);
+  fireEvent.click(screen.getByRole("dialog").parentElement);
+  expect(screen.queryByRole("dialog")).toBeNull();
+  click(target);
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(screen.queryByRole("dialog")).toBeNull();
+  click(target);
+  screen.getByRole("button", { name: "Confirm selection" }).focus();
+  fireEvent.keyDown(document, { key: "Tab" });
+  expect(
+    screen.getByRole("button", { name: "Cancel selection" }),
+  ).toHaveFocus();
+  fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+  expect(
+    screen.getByRole("button", { name: "Confirm selection" }),
+  ).toHaveFocus();
+  current.version++;
+  await reactAct(async () => poll());
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(post).not.toHaveBeenCalled();
+});
+test("President can change and deselect cards before passing exactly two", async () => {
+  await mount(
+    fixture("presidentDiscard", { hand: ["liberal", "fascist", "liberal"] }),
+  );
+  expect(
+    screen.getByRole("button", { name: "Review selected policies" }),
+  ).toBeDisabled();
+  click("liberal SELECT POLICY 1");
+  click("fascist SELECT POLICY 2");
+  click("liberal SELECT POLICY 1");
+  expect(
+    screen.getByRole("button", { name: "Review selected policies" }),
+  ).toBeDisabled();
+  click("liberal SELECT POLICY 3");
+  click("liberal SELECT POLICY 1");
+  click("Review selected policies");
+  expect(
+    screen.getByText(/liberal \+ liberal will go privately/),
+  ).toBeVisible();
+  expect(post).not.toHaveBeenCalled();
+  await sent("discard", { index: 1 });
+});
 test("layout contains bootstrap and children", () => {
   const tree = Layout({ children: <span>Child</span> });
   expect(tree.props.children[1].props.children.props.children).toBe("Child");
@@ -277,12 +335,17 @@ test.each(["presidentDiscard", "chancellorDiscard"])(
     await mount(
       fixture(phase, {
         identity: phase === "presidentDiscard" ? 0 : 1,
-        hand: ["liberal", "fascist"],
+        hand:
+          phase === "presidentDiscard"
+            ? ["liberal", "fascist", "fascist"]
+            : ["liberal", "fascist"],
         fascist: 5,
         liberal: 2,
       }),
     );
-    click("liberal DISCARD THIS POLICY");
+    click("fascist SELECT POLICY 2");
+    if (phase === "presidentDiscard") click("fascist SELECT POLICY 3");
+    click("Review selected policies");
     await sent("discard", { index: 0 });
     if (phase === "chancellorDiscard") {
       click("Request a veto");

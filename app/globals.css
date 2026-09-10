@@ -920,6 +920,33 @@ footer b {
   font-size: 6px;
   letter-spacing: 0.7px;
 }
+.policy[aria-pressed="true"] {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+  transform: translateY(-4px);
+}
+.selection-modal {
+  width: min(100%, 520px);
+  overflow-wrap: anywhere;
+  padding-top: 60px;
+}
+.selection-modal h2 {
+  font-size: clamp(28px, 5vw, 40px);
+}
+.selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+.selection-actions button {
+  flex: 1 1 160px;
+  min-height: 44px;
+}
+.selection-actions .primary {
+  margin-top: 0;
+  justify-content: center;
+}
 .error {
   padding: 13px;
   background: #f1d3c7;

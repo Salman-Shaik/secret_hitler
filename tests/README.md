@@ -28,11 +28,13 @@ On Windows, tests use installed Microsoft Edge. On Linux/macOS, install Chromium
 | Browser lifecycle | Failed requests, reconnect, unmount, stale responses, leave/poll race, local-storage failure                          | Reload reconnect, session clearing, network interruption and recovery             |
 | Presentation      | Every phase/actor UI, role envelope, clipboard, sound, dialog keyboard behavior                                       | Desktop/mobile overflow, theme persistence/system changes, keyboard focus trap    |
 
+Confirmation checks cover cancelling, changing and deselecting cards, keyboard focus, stale-table dismissal, and passing only selected policies. Browser tests verify the phone popup and exercise confirmed nominations, votes, both policy stages, executive actions, and vetoes.
+
 ## Complete games
 
 - The unit suite simulates **50 complete games** distributed across all supported player counts and checks that the 17 policy tiles are conserved after every transition.
 - Six production E2E tests create rooms through the real API, join **5, 6, 7, 8, 9, and 10 players**, acknowledge roles, and play until a winner is declared. Every player’s response is checked for private-data leaks and policy conservation.
-- A separate complete-game test uses **five independent browser contexts** and clicks nomination, ballots, legislation, executive actions, and role controls. Game progression uses real server requests, not intercepted game responses.
+- A separate complete-game test uses **five independent browser contexts at phone and iPad sizes** and clicks nomination, ballots, legislation, executive actions, and role controls. Game progression uses real server requests, not intercepted game responses.
 - Targeted late-game E2E scenarios seed test storage so every victory condition and rare phase can be checked reliably without depending on a lucky shuffle. The full-game scenarios start from ordinary room creation and use the application's real random setup.
 
 ## Storage boundary and reports

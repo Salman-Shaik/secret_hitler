@@ -34,14 +34,36 @@ test("complete game with five independent browsers using game controls", async (
     const pending = page.waitForResponse(
       (r) => r.url().endsWith("/api/game") && r.request().method() === "POST",
     );
-    await page.getByRole("button", { name, exact: true }).first().click();
+    if (name === "select policies") {
+      const own = await read(players.find((p) => p.id === id));
+      for (let i = 1; i < own.hand.length; i++)
+        await page
+          .getByRole("button", {
+            name: own.hand[i] + " SELECT POLICY " + (i + 1),
+            exact: true,
+          })
+          .click();
+      await page
+        .getByRole("button", { name: "Review selected policies" })
+        .click();
+    } else
+      await page.getByRole("button", { name, exact: true }).first().click();
+    const confirm = page.getByRole("button", { name: "Confirm selection" });
+    if (await confirm.count()) await confirm.click();
     const res = await pending;
     expect(res.ok(), await res.text()).toBe(true);
     return (await res.json()).game;
   }
   try {
     for (const p of players) {
-      const context = await browser.newContext({ baseURL });
+      const context = await browser.newContext({
+        baseURL,
+        viewport:
+          contexts.length % 2
+            ? { width: 820, height: 1180 }
+            : { width: 390, height: 844 },
+        hasTouch: true,
+      });
       contexts.push(context);
       const page = await context.newPage();
       pages.push(page);
@@ -83,7 +105,7 @@ test("complete game with five independent browsers using game controls", async (
       ) {
         const id = g.phase === "presidentDiscard" ? g.president : g.chancellor;
         const own = await read(players.find((p) => p.id === id));
-        g = await clickAs(id, `${own.hand[0]} DISCARD THIS POLICY`);
+        g = await clickAs(id, "select policies");
       } else if (g.phase === "executive") {
         if (g.power === "peek")
           g = await clickAs(g.president, "Peek at top three policies");

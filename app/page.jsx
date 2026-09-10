@@ -102,6 +102,8 @@ function Track({ type, count = 0, n = 7 }) {
 }
 export default function Home() {
   const leaving = useRef(false);
+  const [selection, setSelection] = useState(null);
+  const [policies, setPolicies] = useState([]);
   const [game, setGame] = useState(null),
     [session, setSession] = useState(null),
     [name, setName] = useState(""),
@@ -125,12 +127,15 @@ export default function Home() {
     }
   }, []);
   useEffect(() => {
-    if (!rules) return;
+    if (!rules && !selection) return;
     const previous = document.activeElement;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handle = (e) => {
-      if (e.key === "Escape") setRules(false);
+      if (e.key === "Escape") {
+        setRules(false);
+        setSelection(null);
+      }
       if (e.key === "Tab") {
         const items = [
           ...document.querySelectorAll(".rules-modal button, .rules-modal a"),
@@ -152,7 +157,14 @@ export default function Home() {
       document.removeEventListener("keydown", handle);
       previous?.focus();
     };
-  }, [rules]);
+  }, [rules, selection]);
+  useEffect(() => {
+    setSelection(null);
+    setPolicies([]);
+  }, [game?.code, game?.version]);
+  function choose(type, extra, title, detail) {
+    setSelection({ type, extra, title, detail, version: game.version });
+  }
   useEffect(() => {
     if (!session) return;
     let stopped = false;
@@ -329,7 +341,14 @@ export default function Home() {
                   <button
                     disabled={busy}
                     key={p.id}
-                    onClick={() => send("nominate", { target: p.id })}
+                    onClick={() =>
+                      choose(
+                        "nominate",
+                        { target: p.id },
+                        `Nominate ${p.name}?`,
+                        "The table will vote on this President and Chancellor together.",
+                      )
+                    }
                   >
                     {p.name}
                     <ArrowUpRight size={14} />
@@ -352,13 +371,27 @@ export default function Home() {
             <div className="ballots">
               <button
                 disabled={busy}
-                onClick={() => send("vote", { yes: true })}
+                onClick={() =>
+                  choose(
+                    "vote",
+                    { yes: true },
+                    "Vote Ja (Yes)?",
+                    `Approve ${find(game.president)} as President and ${find(game.chancellor)} as Chancellor. Your ballot stays private until everyone votes.`,
+                  )
+                }
               >
                 Ja! <span>YES</span>
               </button>
               <button
                 disabled={busy}
-                onClick={() => send("vote", { yes: false })}
+                onClick={() =>
+                  choose(
+                    "vote",
+                    { yes: false },
+                    "Vote Nein (No)?",
+                    `Reject ${find(game.president)} as President and ${find(game.chancellor)} as Chancellor. Your ballot stays private until everyone votes.`,
+                  )
+                }
               >
                 Nein <span>NO</span>
               </button>
@@ -380,28 +413,71 @@ export default function Home() {
       return (
         <>
           <p>
-            Keep this session silent. Select the policy to <b>discard</b>.{" "}
+            Keep this session silent.{" "}
             {isChancellor
-              ? "The other policy will be enacted."
-              : "The remaining two go to the Chancellor."}
+              ? "Select the policy you want to enact. The other card will be discarded."
+              : "Select two policies to pass to the Chancellor. The unselected card will be discarded."}
           </p>
           <div className="policy-hand">
             {game.hand.map((p, i) => (
               <button
                 className={`policy ${p}`}
-                aria-label={`${p} DISCARD THIS POLICY`}
+                aria-label={`${p} SELECT POLICY ${i + 1}`}
+                aria-pressed={policies.includes(i)}
                 key={i}
                 disabled={busy}
-                onClick={() => send("discard", { index: i })}
+                onClick={() => {
+                  const next = policies.includes(i)
+                    ? policies.filter((x) => x !== i)
+                    : isChancellor
+                      ? [i]
+                      : [...policies, i].slice(-2);
+                  setPolicies(next);
+                }}
               >
                 <Emblem type={p} size={30} />
                 <b>{p}</b>
-                <span>DISCARD THIS POLICY</span>
+                <span>
+                  {policies.includes(i)
+                    ? "SELECTED"
+                    : isChancellor
+                      ? "SELECT TO ENACT"
+                      : "SELECT TO PASS"}
+                </span>
               </button>
             ))}
           </div>
+          <button
+            className="primary"
+            disabled={busy || policies.length !== (isChancellor ? 1 : 2)}
+            onClick={() => {
+              const index = game.hand.findIndex(
+                (_, i) => !policies.includes(i),
+              );
+              choose(
+                "discard",
+                { index },
+                isChancellor
+                  ? "Enact this policy?"
+                  : "Pass these two policies?",
+                `${policies.map((i) => game.hand[i]).join(" + ")} ${isChancellor ? "will be enacted on the board" : "will go privately to the Chancellor"}. The unselected card will be discarded.`,
+              );
+            }}
+          >
+            Review selected policies
+          </button>
           {isChancellor && game.fascist >= 5 && !game.vetoDenied && (
-            <button disabled={busy} onClick={() => send("veto")}>
+            <button
+              disabled={busy}
+              onClick={() =>
+                choose(
+                  "veto",
+                  {},
+                  "Request a veto?",
+                  "Ask the President to discard both policies. If accepted, the election tracker advances.",
+                )
+              }
+            >
               Request a veto
             </button>
           )}
@@ -418,13 +494,27 @@ export default function Home() {
             <div className="choices">
               <button
                 disabled={busy}
-                onClick={() => send("vetoAnswer", { yes: true })}
+                onClick={() =>
+                  choose(
+                    "vetoAnswer",
+                    { yes: true },
+                    "Agree to veto?",
+                    "Both policies will be discarded and the election tracker advances.",
+                  )
+                }
               >
                 Agree to veto
               </button>
               <button
                 disabled={busy}
-                onClick={() => send("vetoAnswer", { yes: false })}
+                onClick={() =>
+                  choose(
+                    "vetoAnswer",
+                    { yes: false },
+                    "Reject veto?",
+                    "The Chancellor must select a policy to enact.",
+                  )
+                }
               >
                 Reject veto
               </button>
@@ -445,7 +535,14 @@ export default function Home() {
               <button
                 className="primary"
                 disabled={busy}
-                onClick={() => send("power")}
+                onClick={() =>
+                  choose(
+                    "power",
+                    {},
+                    "Peek at the next policies?",
+                    "Only you will see the top three policies. Their order stays unchanged.",
+                  )
+                }
               >
                 Peek at top three policies
                 <Eye size={17} />
@@ -464,7 +561,18 @@ export default function Home() {
                     <button
                       disabled={busy}
                       key={p.id}
-                      onClick={() => send("power", { target: p.id })}
+                      onClick={() =>
+                        choose(
+                          "power",
+                          { target: p.id },
+                          `${labels[game.power]}: ${p.name}?`,
+                          game.power === "execute"
+                            ? "This player will be removed from play and cannot vote. This cannot be undone."
+                            : game.power === "special"
+                              ? "This player will choose the next Chancellor as special President."
+                              : "Only you will see this player's party membership, not whether they are Hitler.",
+                        )
+                      }
                     >
                       {p.name}
                       <ArrowUpRight size={14} />
@@ -896,6 +1004,49 @@ export default function Home() {
           CC BY-NC-SA 4.0
         </a>
       </footer>
+      {selection && (
+        <div className="modal-backdrop" onClick={() => setSelection(null)}>
+          <section
+            className="rules-modal selection-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="selection-title"
+            aria-describedby="selection-detail"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close icon-button"
+              aria-label="Cancel selection"
+              autoFocus
+              onClick={() => setSelection(null)}
+            >
+              <X />
+            </button>
+            <span className="eyebrow">REVIEW YOUR CHOICE</span>
+            <h2 id="selection-title">{selection.title}</h2>
+            <p id="selection-detail">{selection.detail}</p>
+            <div className="selection-actions">
+              <button onClick={() => setSelection(null)}>
+                Change selection
+              </button>
+              <button
+                className="primary"
+                disabled={busy}
+                onClick={() => {
+                  const choice = selection;
+                  setSelection(null);
+                  send(choice.type, {
+                    ...choice.extra,
+                    version: choice.version,
+                  });
+                }}
+              >
+                Confirm selection
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       {rules && (
         <div className="modal-backdrop" onClick={() => setRules(false)}>
           <section

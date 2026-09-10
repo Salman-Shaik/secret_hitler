@@ -28,9 +28,13 @@ Create a new Vercel Next.js project named **secret-hitler-table**. Add `UPSTASH_
 
 The **Test and deploy** workflow runs coverage and E2E checks, then deploys successful `main` revisions using the Vercel CLI. Pull requests only run tests. You can trigger the workflow manually after adding the secrets. React and the Node API deploy together; no separate backend is required.
 
-`vercel.json` selects Next.js, a locked `npm ci` install, and the production build. Node.js 22 is pinned in `package.json`. Keep `NEXT_DIST_DIR`, `TEST_PORT`, `TEST_REDIS_PORT`, and test-only Redis credentials out of Vercel environment settings. Production uses `.next`; `.next-test` is only for local/CI tests. Before uploading, run `npm run test:all` and `npm run build`. No deployment has been performed by this repository setup.
+`vercel.json` selects Next.js, a locked `npm ci` install, and the production build. Node.js 22 is pinned in `package.json`. Keep `NEXT_DIST_DIR`, `TEST_PORT`, `TEST_REDIS_PORT`, and test-only Redis credentials out of Vercel environment settings. Production uses `.next`; `.next-test` is only for local/CI tests. Before uploading, run `npm run test:all` and `npm run build`. The live table is https://secret-hitler-table.vercel.app.
 
 Redis is necessary because separate serverless invocations do not share durable process memory. The API fails explicitly on Vercel if credentials are missing. Updates use Redis Lua compare-and-set to prevent simultaneous actions from overwriting each other. Clients poll every 1.5 seconds; this avoids requiring a persistent socket server but consumes Redis reads while rooms are open. Storage and hosting are the only external services. No account or database schema setup is needed.
+
+## Making choices
+
+Select two policy cards to pass as President, or one card to enact as Chancellor. Review the selection and confirm it; the unselected card is discarded automatically. Nominations, votes, executive powers, and veto decisions also show a confirmation popup. Use Change selection, Escape, or the close button to cancel without submitting.
 
 ## Rules and privacy
 
