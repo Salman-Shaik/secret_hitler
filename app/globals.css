@@ -115,7 +115,7 @@
 [data-theme="dark"] input::placeholder {
   color: #aaa995;
 }
-[data-theme="dark"] button:hover:not(:disabled) {
+[data-theme="dark"] button:hover:not(:disabled):not(.policy) {
   background: #3b453d;
 }
 [data-theme="dark"] .primary {
@@ -218,7 +218,7 @@ button {
     transform 0.16s,
     background 0.16s;
 }
-button:hover:not(:disabled) {
+button:hover:not(:disabled):not(.policy) {
   background: #ddd7c5;
   transform: translateY(-1px);
 }
