@@ -78,7 +78,7 @@ test("mobile policy selection passes chosen cards only after confirmation", asyn
   expect((await state(request, g)).hand).toEqual(g.hand);
   await page.getByRole("button", { name: "Review selected policies" }).click();
   await page
-    .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+    .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
     .click();
   await expect(page.locator(".policy-hand")).toHaveCount(0);
   expect((await state(request, g, g.players[1])).hand).toEqual([
@@ -199,7 +199,7 @@ for (const winner of ["liberal", "fascist"])
       .getByRole("button", { name: "Review selected policies" })
       .click();
     await page
-      .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+      .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
       .click();
     await expect(
       page.getByRole("heading", {
@@ -231,7 +231,7 @@ test("Hitler election victory and execution victory", async ({
   await page.reload();
   await page.getByRole("button", { name: "P6", exact: true }).click();
   await page
-    .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+    .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
     .click();
   await expect(
     page.getByRole("heading", { name: "Liberals win." }),
@@ -254,7 +254,7 @@ for (const power of ["peek", "investigate", "special", "execute"])
       })
       .click();
     await page
-      .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+      .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
       .click();
     if (power === "peek") {
       await expect(
@@ -266,9 +266,7 @@ for (const power of ["peek", "investigate", "special", "execute"])
       await expect(
         page.getByRole("dialog", { name: "Private policy peek" }),
       ).toBeVisible();
-      await page
-        .getByRole("button", { name: "Done reviewing \u00b7 continue" })
-        .click();
+      await page.getByRole("button", { name: "Done" }).click();
     }
     await expect(
       page.getByRole("heading", { name: "A government begins with trust." }),
@@ -314,7 +312,7 @@ for (const agree of [true, false])
     await open(page, g, g.players[1]);
     await page.getByRole("button", { name: "Request a veto" }).click();
     await page
-      .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+      .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
       .click();
     const context = await browser.newContext({
       baseURL: test.info().project.use.baseURL,
@@ -326,7 +324,7 @@ for (const agree of [true, false])
         .getByRole("button", { name: agree ? "Agree to veto" : "Reject veto" })
         .click();
       await president
-        .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+        .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
         .click();
       if (agree) {
         await expect(
@@ -349,7 +347,7 @@ for (const agree of [true, false])
           .getByRole("button", { name: "Review selected policies" })
           .click();
         await page
-          .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+          .getByRole("button", { name: /^Confirm selection$|^Confirm$/ })
           .click();
         await expect(
           page.getByRole("heading", {

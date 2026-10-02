@@ -317,8 +317,8 @@ export default function Home() {
     reveal: "Open your secret envelope.",
     nominate: "A government begins with trust.",
     vote: "The floor is yours. Vote.",
-    presidentDiscard: "Three policies. One decision.",
-    chancellorDiscard: "Decide the future.",
+    presidentDiscard: "Select two policies to pass.",
+    chancellorDiscard: "Select one policy to enact.",
     veto: "An agenda in the balance.",
     executive: labels[game?.power],
     peekReview: "Review the next three policies.",
@@ -465,8 +465,8 @@ export default function Home() {
           <p>
             Keep this session silent.{" "}
             {isChancellor
-              ? "Select the policy you want to enact. The other card will be discarded."
-              : "Select two policies to pass to the Chancellor. The unselected card will be discarded."}
+              ? "Select ONE policy to enact on the board, then review your choice and press Confirm. The selected card is the policy that will be enacted."
+              : "Select TWO policies to pass to the Chancellor, then review your choices and press Confirm. The selected cards are the policies the Chancellor will receive."}
           </p>
           <div className="policy-hand">
             {game.hand.map((p, i) => (
@@ -510,7 +510,7 @@ export default function Home() {
                 isChancellor
                   ? "Enact this policy?"
                   : "Pass these two policies?",
-                `${policies.map((i) => game.hand[i]).join(" + ")} ${isChancellor ? "will be enacted on the board" : "will go privately to the Chancellor"}. The unselected card will be discarded.`,
+                `${policies.map((i) => game.hand[i]).join(" + ")} ${isChancellor ? "will be enacted on the board" : "will go privately to the Chancellor"}. Press Confirm to proceed, or change your selection.`,
               );
             }}
           >
@@ -1116,7 +1116,7 @@ export default function Home() {
               disabled={busy}
               onClick={() => send("finishPeek")}
             >
-              Done reviewing · continue
+              Done
             </button>
             {error && <p role="alert">{error}</p>}
           </section>
@@ -1159,9 +1159,7 @@ export default function Home() {
                   });
                 }}
               >
-                {selection.type === "discard"
-                  ? "Confirm Discarding"
-                  : "Confirm selection"}
+                {selection.type === "discard" ? "Confirm" : "Confirm selection"}
               </button>
             </div>
           </section>
@@ -1213,9 +1211,9 @@ export default function Home() {
             </p>
             <h3>03 · Pass a policy</h3>
             <p>
-              The President privately discards one of three policies. The
-              Chancellor privately discards one of the remaining two, enacting
-              the other. Stay silent during legislation. You can lie about what
+              The President privately selects two of three policies to pass. The
+              Chancellor privately selects one of those two to enact on the
+              board. Stay silent during legislation. You can lie about what
               you saw afterward. When fewer than three remain, the remaining
               deck and discards are shuffled together.
             </p>

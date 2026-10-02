@@ -151,10 +151,10 @@ test("role/action highlights, attention chime, and private peek review error rec
     screen.getByRole("dialog", { name: "Private policy peek" }),
   ).toHaveTextContent("#1");
   post.mockResolvedValueOnce(response({ error: "Try again" }, false));
-  click("Done reviewing · continue");
+  click("Done");
   await waitFor(() => expect(screen.getAllByRole("alert")).toHaveLength(2));
   expect(frequencies.slice(-2).map((f) => f.value)).toEqual([220, 165]);
-  click("Done reviewing · continue");
+  click("Done");
   await sent("finishPeek");
   cleanup();
   await mount(fixture("peekReview", { identity: 1 }));
@@ -193,7 +193,7 @@ test("lobby host badge and ordinary modal Tab navigation", async () => {
 });
 async function sent(type, extra = {}) {
   const confirm = screen.queryByRole("button", {
-    name: /Confirm selection|Confirm Discarding/,
+    name: /^Confirm selection$|^Confirm$/,
   });
   if (confirm) fireEvent.click(confirm);
   await waitFor(() =>

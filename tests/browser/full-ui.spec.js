@@ -49,7 +49,7 @@ test("complete game with five independent browsers using game controls", async (
     } else
       await page.getByRole("button", { name, exact: true }).first().click();
     const confirm = page.getByRole("button", {
-      name: /Confirm selection|Confirm Discarding/,
+      name: /^Confirm selection$|^Confirm$/,
     });
     if (await confirm.count()) await confirm.click();
     const res = await pending;
@@ -109,7 +109,7 @@ test("complete game with five independent browsers using game controls", async (
         const own = await read(players.find((p) => p.id === id));
         g = await clickAs(id, "select policies");
       } else if (g.phase === "peekReview") {
-        g = await clickAs(g.president, "Done reviewing \u00b7 continue");
+        g = await clickAs(g.president, "Done");
       } else if (g.phase === "executive") {
         if (g.power === "peek")
           g = await clickAs(g.president, "Peek at top three policies");
