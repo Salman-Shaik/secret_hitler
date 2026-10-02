@@ -42,7 +42,7 @@ export async function POST(req) {
     }
     if (typeof a.code !== "string" || !/^[A-Z]{6}$/.test(a.code))
       throw new Error("Enter a six-letter room code.");
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 16; i++) {
       const g = await getRoom(a.code);
       if (!g) return reply({ error: "Room not found or expired." }, 404);
       const version = g.version;
@@ -61,7 +61,11 @@ export async function POST(req) {
           (p) => `Bearer ${p.token}` === req.headers.get("authorization"),
         );
         if (!p) return reply({ error: "Invalid session." }, 401);
-        if (a.version !== version)
+        const sameElection =
+          a.type === "vote" &&
+          g.phase === "vote" &&
+          a.election === `${g.round}:${g.president}:${g.chancellor}`;
+        if (a.version !== version && !sameElection)
           return reply(
             { error: "The table changed. Try your action again." },
             409,

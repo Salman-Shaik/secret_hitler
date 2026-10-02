@@ -33,6 +33,32 @@ const labels = {
 function Emblem({ type, size = 30 }) {
   return type === "liberal" ? <Feather size={size} /> : <Skull size={size} />;
 }
+function playCue(kind) {
+  try {
+    const audio = new AudioContext();
+    const notes =
+      kind === "liberal"
+        ? [523, 659, 784, 1047]
+        : kind === "fascist"
+          ? [330, 311, 262, 196]
+          : kind === "attention"
+            ? [660, 880]
+            : kind === "error"
+              ? [220, 165]
+              : [440];
+    notes.forEach((frequency, i) => {
+      const oscillator = audio.createOscillator(),
+        gain = audio.createGain();
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+      gain.gain.setValueAtTime(0.025, audio.currentTime);
+      oscillator.frequency.value = frequency;
+      oscillator.start(audio.currentTime + i * 0.18);
+      oscillator.stop(audio.currentTime + i * 0.18 + 0.15);
+      if (i === notes.length - 1) oscillator.onended = () => audio.close();
+    });
+  } catch {}
+}
 function Track({ type, count = 0, n = 7 }) {
   const liberal = type === "liberal",
     total = liberal ? 5 : 6;
@@ -115,6 +141,31 @@ export default function Home() {
     [reveal, setReveal] = useState(false),
     [copied, setCopied] = useState(false),
     [sound, setSound] = useState(false);
+  const needsVote =
+    game?.phase === "vote" &&
+    game.players.some((p) => p.id === game.me.id && p.alive) &&
+    !game.voted.includes(game.me.id);
+  const needsRole =
+    game?.phase === "reveal" && !game.ready.includes(game.me.id);
+  const needsPeek =
+    game?.phase === "peekReview" && game.president === game.me.id;
+  const needsAction =
+    !!game &&
+    ((needsRole && reveal) ||
+      needsVote ||
+      game.hand.length > 0 ||
+      (["nominate", "executive", "peekReview", "veto"].includes(game.phase) &&
+        game.president === game.me.id));
+  const cueKey =
+    game &&
+    `${game.code}:${game.round}:${game.phase}:${needsAction || needsRole}`;
+  const lastCue = useRef(null);
+  useEffect(() => {
+    if (!sound || !game || cueKey === lastCue.current) return;
+    lastCue.current = cueKey;
+    if (game.phase === "finished") playCue(game.winner);
+    else if (needsAction || needsRole) playCue("attention");
+  }, [sound, cueKey, game, needsAction, needsRole]);
   useEffect(() => {
     try {
       const s = JSON.parse(localStorage.getItem("sh-session"));
@@ -127,7 +178,7 @@ export default function Home() {
     }
   }, []);
   useEffect(() => {
-    if (!rules && !selection) return;
+    if (!rules && !selection && !needsVote && !needsPeek) return;
     const previous = document.activeElement;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -157,11 +208,11 @@ export default function Home() {
       document.removeEventListener("keydown", handle);
       previous?.focus();
     };
-  }, [rules, selection]);
+  }, [rules, selection, needsVote, needsPeek]);
   useEffect(() => {
     setSelection(null);
     setPolicies([]);
-  }, [game?.code, game?.version]);
+  }, [game?.code, game?.phase, game?.round]);
   function choose(type, extra, title, detail) {
     setSelection({ type, extra, title, detail, version: game.version });
   }
@@ -209,6 +260,7 @@ export default function Home() {
           name,
           code: game?.code || code,
           version: game?.version,
+          election: game?.election,
           ...extra,
         }),
       });
@@ -235,23 +287,11 @@ export default function Home() {
         localStorage.setItem("sh-session", JSON.stringify(s));
         setSession(s);
       }
-      if (sound) {
-        try {
-          const audio = new AudioContext();
-          const o = audio.createOscillator(),
-            gain = audio.createGain();
-          o.connect(gain);
-          gain.connect(audio.destination);
-          gain.gain.setValueAtTime(0.025, audio.currentTime);
-          o.frequency.value = 440;
-          o.start();
-          o.stop(audio.currentTime + 0.08);
-          o.onended = () => audio.close();
-        } catch {}
-      }
+      if (sound) playCue("success");
     } catch (e) {
       leaving.current = false;
       setError(e.message);
+      if (sound) playCue("error");
     } finally {
       setBusy(false);
     }
@@ -281,9 +321,18 @@ export default function Home() {
     chancellorDiscard: "Decide the future.",
     veto: "An agenda in the balance.",
     executive: labels[game?.power],
+    peekReview: "Review the next three policies.",
     finished: `${game?.winner === "liberal" ? "Liberals" : "Fascists"} win.`,
   };
   function actions() {
+    if (phase === "peekReview")
+      return (
+        <p>
+          {isPresident
+            ? "Review the private policy popup, then continue when you are ready."
+            : `${find(game.president)} is privately reviewing the next three policies.`}
+        </p>
+      );
     if (phase === "lobby")
       return (
         <>
@@ -370,6 +419,7 @@ export default function Home() {
           !game.voted.includes(me) ? (
             <div className="ballots">
               <button
+                autoFocus
                 disabled={busy}
                 onClick={() =>
                   choose(
@@ -871,7 +921,14 @@ export default function Home() {
               </section>
             ) : (
               <>
-                <section className="action-panel">
+                <section
+                  className={`action-panel ${needsAction ? "action-required" : ""}`}
+                >
+                  {needsAction && (
+                    <div className="action-indicator" role="status">
+                      YOUR ACTION IS NEEDED
+                    </div>
+                  )}
                   <div className="panel-kicker">
                     <span className="live-dot" />
                     {phase === "lobby"
@@ -881,7 +938,11 @@ export default function Home() {
                         : `ROUND ${game.round} · ${phase === "vote" ? "ELECTION" : phase === "executive" ? "EXECUTIVE ACTION" : "THE GOVERNMENT"}`}
                   </div>
                   <h2>{phaseTitles[phase]}</h2>
-                  {actions()}
+                  {needsVote ? (
+                    <p>Your ballot is waiting in the voting popup.</p>
+                  ) : (
+                    actions()
+                  )}
                   {phase === "lobby" && (
                     <button
                       className="leave-lobby"
@@ -899,7 +960,14 @@ export default function Home() {
                   </button>
                 </section>
                 {phase !== "lobby" && (
-                  <section className="secret-panel">
+                  <section
+                    className={`secret-panel ${needsRole ? "action-required" : ""}`}
+                  >
+                    {needsRole && (
+                      <div className="action-indicator" role="status">
+                        VIEW YOUR ROLE, THEN CONFIRM YOU ARE READY
+                      </div>
+                    )}
                     <div className="section-label">
                       <span>YOUR PRIVATE ENVELOPE</span>
                       <button
@@ -1004,6 +1072,56 @@ export default function Home() {
           CC BY-NC-SA 4.0
         </a>
       </footer>
+      {needsVote && !selection && !rules && (
+        <div className="modal-backdrop">
+          <section
+            className="rules-modal selection-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Cast your vote"
+          >
+            <span className="eyebrow">YOUR SECRET BALLOT</span>
+            <h2>Vote on this government</h2>
+            {actions()}
+            {error && <p role="alert">{error}</p>}
+          </section>
+        </div>
+      )}
+      {needsPeek && (
+        <div className="modal-backdrop">
+          <section
+            className="rules-modal selection-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Private policy peek"
+          >
+            <span className="eyebrow">FOR YOUR EYES ONLY · TOP CARD FIRST</span>
+            <h2>The next three policies</h2>
+            <div className="policy-hand">
+              {game.peek.map((policy, i) => (
+                <div className={`policy ${policy}`} key={i}>
+                  <span>#{i + 1}</span>
+                  <Emblem type={policy} />
+                  <b>{policy}</b>
+                </div>
+              ))}
+            </div>
+            <p>
+              Keep these cards private. Their order stays unchanged. Play
+              continues only when you finish reviewing.
+            </p>
+            <button
+              autoFocus
+              className="primary"
+              disabled={busy}
+              onClick={() => send("finishPeek")}
+            >
+              Done reviewing · continue
+            </button>
+            {error && <p role="alert">{error}</p>}
+          </section>
+        </div>
+      )}
       {selection && (
         <div className="modal-backdrop" onClick={() => setSelection(null)}>
           <section
@@ -1041,7 +1159,9 @@ export default function Home() {
                   });
                 }}
               >
-                Confirm selection
+                {selection.type === "discard"
+                  ? "Confirm Discarding"
+                  : "Confirm selection"}
               </button>
             </div>
           </section>

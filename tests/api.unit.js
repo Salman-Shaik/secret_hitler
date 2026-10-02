@@ -1,5 +1,5 @@
 import { test, expect, vi, beforeEach } from "vitest";
-import { lobby } from "./helpers/game.js";
+import { lobby, setup } from "./helpers/game.js";
 const store = vi.hoisted(() => ({ getRoom: vi.fn(), saveRoom: vi.fn() }));
 vi.mock("../lib/store.js", () => store);
 import { GET, POST } from "../app/api/game/route.js";
@@ -17,6 +17,39 @@ function req(data, headers = {}) {
   });
 }
 const auth = () => ({ Authorization: `Bearer ${g.players[0].token}` });
+test("same-election stale ballots retry safely; old elections and duplicate voters are rejected", async () => {
+  g = setup(10);
+  g.phase = "vote";
+  g.chancellor = g.players[1].id;
+  g.version = 8;
+  const ballot = {
+    type: "vote",
+    yes: true,
+    code: g.code,
+    version: 0,
+    election: `${g.round}:${g.president}:${g.chancellor}`,
+  };
+  expect(
+    (await post({ ...ballot, election: "old-election" }, auth())).status,
+  ).toBe(409);
+  store.saveRoom.mockImplementation(async (next, version) => {
+    if (g.version !== version) return false;
+    g = structuredClone(next);
+    return true;
+  });
+  const players = [...g.players];
+  const results = await Promise.all(
+    players.map((p) => post(ballot, { Authorization: `Bearer ${p.token}` })),
+  );
+  expect(results.map((r) => r.status)).toEqual(Array(10).fill(200));
+  expect(Object.keys(g.lastVotes)).toHaveLength(10);
+  expect(g.phase).toBe("presidentDiscard");
+  expect((await post(ballot, auth())).status).toBe(409);
+  g.phase = "vote";
+  expect((await post({ ...ballot, version: g.version }, auth())).status).toBe(
+    400,
+  );
+});
 async function post(data, headers) {
   const res = await POST(req(data, headers));
   return { status: res.status, body: await res.json() };

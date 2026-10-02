@@ -34,7 +34,7 @@ Redis is necessary because separate serverless invocations do not share durable 
 
 ## Making choices
 
-Select two policy cards to pass as President, or one card to enact as Chancellor. Review the selection and confirm it; the unselected card is discarded automatically. Nominations, votes, executive powers, and veto decisions also show a confirmation popup. Use Change selection, Escape, or the close button to cancel without submitting.
+Select two policy cards to pass as President, or one card to enact as Chancellor. Review the selection and press **Confirm Discarding**; the unselected card is discarded automatically. Nominations, votes, executive powers, and veto decisions also show a confirmation popup. Use Change selection, Escape, or the close button to cancel a pending choice without submitting. Voting opens a focused ballot popup and stays available until your vote is submitted. Highlighted panels show where your action is needed. Policy peek pauses play until the President finishes privately reviewing the cards. Enable the speaker button for turn alerts, confirmation/error chimes, and distinct original victory cues for each team.
 
 ## Rules and privacy
 

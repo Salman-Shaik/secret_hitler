@@ -23,12 +23,12 @@ On Windows, tests use installed Microsoft Edge. On Linux/macOS, install Chromium
 | Executive powers  | All initial-player-count board slots, party-only investigation, no repeats, ordered peek, special rotation, execution | Each power exercised via browser, private intel, execution and special election   |
 | Veto and chaos    | Unlock threshold, request/refusal/consent, failed-government tracker, third failure, cleared term limits              | Both veto responses via separate browsers, three rejected governments             |
 | Victory           | Five Liberal policies, six Fascist policies, Hitler election and execution, role reveal                               | All four victory conditions, end screen and new-game control                      |
-| Security/API      | Missing/forged auth, cross-origin POST, malformed body, stale version, bounded CAS retries, private projections       | Unauthorized/invalid requests, conflicting concurrent ballots                     |
+| Security/API      | Missing/forged auth, cross-origin POST, malformed body, stale version, bounded CAS retries, private projections       | Unauthorized/invalid requests, all simultaneous ballots accepted within one election; older-election ballots rejected                     |
 | Storage           | Memory copies/expiry, Redis serialization/TTL, failure paths, missing Vercel credentials, CAS results                 | Real application HTTP calls through the Redis REST adapter to local test storage  |
 | Browser lifecycle | Failed requests, reconnect, unmount, stale responses, leave/poll race, local-storage failure                          | Reload reconnect, session clearing, network interruption and recovery             |
 | Presentation      | Every phase/actor UI, role envelope, clipboard, sound, dialog keyboard behavior                                       | Desktop/mobile overflow, theme persistence/system changes, keyboard focus trap    |
 
-Confirmation checks cover cancelling, changing and deselecting cards, keyboard focus, stale-table dismissal, and passing only selected policies. Browser tests verify the phone popup and exercise confirmed nominations, votes, both policy stages, executive actions, and vetoes.
+Confirmation checks cover cancelling, changing and deselecting cards, keyboard focus, phase-change dismissal, and passing only selected policies. Browser tests verify the phone popup and exercise confirmed nominations, votes, both policy stages, executive actions, and vetoes.
 
 ## Complete games
 
@@ -42,3 +42,5 @@ Confirmation checks cover cancelling, changing and deselecting cards, keyboard f
 `tests/helpers/redis-server.mjs` is a loopback-only **test double** for the Redis REST service. It models room reads and atomic compare-and-set writes. The `/seed` helper exists only in this separate test process; the application has no test endpoints or privileged setup mode. These tests do **not** certify a live Upstash deployment or execute the Redis Lua scripts in an actual Redis runtime.
 
 100% code coverage measures executed code paths, not all possible combinations of player choices, network timing, browsers, or hosting conditions. The matrix above defines the scenarios checked. Failures retain Playwright traces and screenshots in `test-results/`; the HTML report is in `playwright-report/`.
+
+Regression checks cover ten concurrent same-election votes, private peek acknowledgement and reload, focused voting, action highlights, and distinct muted/unmuted audio cues.

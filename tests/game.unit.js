@@ -1,6 +1,27 @@
 import { test, expect } from "vitest";
 import { act, player, view, eligible, powers } from "../lib/game.js";
 import { lobby, setup, nominate, vote, legislation } from "./helpers/game.js";
+test("peek pauses for its President, keeps order private, and advances only on acknowledgement", () => {
+  const g = setup(5),
+    president = g.president,
+    deck = [...g.deck];
+  expect(() => act(g, president, { type: "finishPeek" })).toThrow(/President/);
+  g.phase = "executive";
+  g.power = "peek";
+  act(g, president, { type: "power" });
+  expect(g.phase).toBe("peekReview");
+  expect(g.president).toBe(president);
+  expect(view(g, president).peek).toEqual(deck.slice(0, 3));
+  expect(view(g, g.players[1].id).peek).toEqual([]);
+  expect(() => act(g, g.players[1].id, { type: "finishPeek" })).toThrow(
+    /President/,
+  );
+  act(g, president, { type: "finishPeek" });
+  expect(g.phase).toBe("nominate");
+  expect(g.president).not.toBe(president);
+  expect(g.deck).toEqual(deck);
+  expect(view(g, president).peek).toEqual([]);
+});
 test("invalid executive power rejects corrupted state", () => {
   const g = setup();
   g.phase = "executive";

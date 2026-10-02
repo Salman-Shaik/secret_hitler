@@ -210,6 +210,8 @@ test("random complete games conserve policies and always finish", () => {
         act(g, g.president, { type: "discard", index: 0 });
       else if (g.phase === "chancellorDiscard")
         act(g, g.chancellor, { type: "discard", index: 0 });
+      else if (g.phase === "peekReview")
+        act(g, g.president, { type: "finishPeek" });
       else if (g.phase === "executive") {
         const target = g.players.find(
           (p) =>

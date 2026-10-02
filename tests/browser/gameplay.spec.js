@@ -77,7 +77,9 @@ test("mobile policy selection passes chosen cards only after confirmation", asyn
   await page.getByRole("button", { name: "Change selection" }).click();
   expect((await state(request, g)).hand).toEqual(g.hand);
   await page.getByRole("button", { name: "Review selected policies" }).click();
-  await page.getByRole("button", { name: "Confirm selection" }).click();
+  await page
+    .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+    .click();
   await expect(page.locator(".policy-hand")).toHaveCount(0);
   expect((await state(request, g, g.players[1])).hand).toEqual([
     "liberal",
@@ -125,6 +127,13 @@ for (const n of [5, 6, 7, 8, 9, 10])
               (s.phase === "presidentDiscard" ? s.president : s.chancellor),
           ),
           { type: "discard", index: 0 },
+        );
+      else if (s.phase === "peekReview")
+        s = await action(
+          request,
+          g,
+          g.players.find((p) => p.id === s.president),
+          { type: "finishPeek" },
         );
       else if (s.phase === "executive") {
         const target = s.players.find(
@@ -189,7 +198,9 @@ for (const winner of ["liberal", "fascist"])
     await page
       .getByRole("button", { name: "Review selected policies" })
       .click();
-    await page.getByRole("button", { name: "Confirm selection" }).click();
+    await page
+      .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+      .click();
     await expect(
       page.getByRole("heading", {
         name: winner === "liberal" ? "Liberals win." : "Fascists win.",
@@ -219,7 +230,9 @@ test("Hitler election victory and execution victory", async ({
   );
   await page.reload();
   await page.getByRole("button", { name: "P6", exact: true }).click();
-  await page.getByRole("button", { name: "Confirm selection" }).click();
+  await page
+    .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Liberals win." }),
   ).toBeVisible();
@@ -240,7 +253,23 @@ for (const power of ["peek", "investigate", "special", "execute"])
         exact: true,
       })
       .click();
-    await page.getByRole("button", { name: "Confirm selection" }).click();
+    await page
+      .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+      .click();
+    if (power === "peek") {
+      await expect(
+        page.getByRole("dialog", { name: "Private policy peek" }),
+      ).toBeVisible();
+      expect((await state(request, g)).phase).toBe("peekReview");
+      expect((await state(request, g, g.players[1])).peek).toEqual([]);
+      await page.reload();
+      await expect(
+        page.getByRole("dialog", { name: "Private policy peek" }),
+      ).toBeVisible();
+      await page
+        .getByRole("button", { name: "Done reviewing \u00b7 continue" })
+        .click();
+    }
     await expect(
       page.getByRole("heading", { name: "A government begins with trust." }),
     ).toBeVisible();
@@ -284,7 +313,9 @@ for (const agree of [true, false])
     await seed(request, g);
     await open(page, g, g.players[1]);
     await page.getByRole("button", { name: "Request a veto" }).click();
-    await page.getByRole("button", { name: "Confirm selection" }).click();
+    await page
+      .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+      .click();
     const context = await browser.newContext({
       baseURL: test.info().project.use.baseURL,
     });
@@ -295,7 +326,7 @@ for (const agree of [true, false])
         .getByRole("button", { name: agree ? "Agree to veto" : "Reject veto" })
         .click();
       await president
-        .getByRole("button", { name: "Confirm selection" })
+        .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
         .click();
       if (agree) {
         await expect(
@@ -317,7 +348,9 @@ for (const agree of [true, false])
         await page
           .getByRole("button", { name: "Review selected policies" })
           .click();
-        await page.getByRole("button", { name: "Confirm selection" }).click();
+        await page
+          .getByRole("button", { name: /Confirm selection|Confirm Discarding/ })
+          .click();
         await expect(
           page.getByRole("heading", {
             name: "A government begins with trust.",
@@ -371,15 +404,21 @@ test("parallel ballots do not overwrite each other; stale requests are rejected"
     g.players.map((p) =>
       request.post("/api/game", {
         headers: headers(p),
-        data: { type: "vote", yes: true, code: g.code, version: s.version },
+        data: {
+          type: "vote",
+          yes: true,
+          code: g.code,
+          version: s.version,
+          election: s.election,
+        },
       }),
     ),
   );
-  expect(responses.filter((r) => r.status() === 200)).toHaveLength(1);
-  expect(responses.filter((r) => r.status() === 409)).toHaveLength(6);
+  expect(responses.filter((r) => r.status() === 200)).toHaveLength(7);
+  expect(responses.filter((r) => r.status() === 409)).toHaveLength(0);
   const after = await state(request, g);
-  expect(after.voted).toHaveLength(1);
-  expect(after.lastVotes).toBeNull();
+  expect(after.voted).toHaveLength(7);
+  expect(Object.keys(after.lastVotes)).toHaveLength(7);
   for (const p of g.players.filter((p) => !after.voted.includes(p.id)))
     await action(request, g, p, { type: "vote", yes: true });
   expect((await state(request, g)).phase).toBe("presidentDiscard");

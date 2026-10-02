@@ -78,9 +78,110 @@ async function mount(g) {
   current = g;
   if (g) localStorage.setItem("sh-session", JSON.stringify(session));
   render(<Home />);
-  if (g) await screen.findByText("Trust is a dangerous game.");
+  if (g) {
+    await waitFor(() =>
+      expect(document.querySelector(".action-panel")).not.toBeNull(),
+    );
+    await reactAct(async () => {});
+  }
 }
 const click = (name) => fireEvent.click(screen.getByRole("button", { name }));
+test.each(["liberal", "fascist"])(
+  "distinct %s victory sound and mute",
+  async (winner) => {
+    const frequencies = [];
+    vi.stubGlobal(
+      "AudioContext",
+      class {
+        currentTime = 0;
+        destination = {};
+        createOscillator() {
+          const frequency = {};
+          frequencies.push(frequency);
+          return { frequency, connect() {}, start() {}, stop() {} };
+        }
+        createGain() {
+          return { connect() {}, gain: { setValueAtTime() {} } };
+        }
+      },
+    );
+    await mount(fixture("finished", { winner }));
+    click("Enable action sounds");
+    expect(frequencies.map((f) => f.value)).toEqual(
+      winner === "liberal" ? [523, 659, 784, 1047] : [330, 311, 262, 196],
+    );
+    await reactAct(async () => poll());
+    expect(frequencies).toHaveLength(4);
+    click("Disable action sounds");
+  },
+);
+test("role/action highlights, attention chime, and private peek review error recovery", async () => {
+  const frequencies = [];
+  vi.stubGlobal(
+    "AudioContext",
+    class {
+      currentTime = 0;
+      destination = {};
+      createOscillator() {
+        const frequency = {};
+        frequencies.push(frequency);
+        return { frequency, connect() {}, start() {}, stop() {} };
+      }
+      createGain() {
+        return { connect() {}, gain: { setValueAtTime() {} } };
+      }
+    },
+  );
+  await mount(fixture("reveal"));
+  expect(document.querySelector(".secret-panel")).toHaveClass(
+    "action-required",
+  );
+  click("Enable action sounds");
+  expect(frequencies.map((f) => f.value)).toEqual([660, 880]);
+  click("Reveal secret role");
+  expect(document.querySelector(".action-panel")).toHaveClass(
+    "action-required",
+  );
+  current = fixture("peekReview", {
+    deck: ["liberal", "fascist", "liberal"],
+    version: 2,
+  });
+  await reactAct(async () => poll());
+  expect(
+    screen.getByRole("dialog", { name: "Private policy peek" }),
+  ).toHaveTextContent("#1");
+  post.mockResolvedValueOnce(response({ error: "Try again" }, false));
+  click("Done reviewing · continue");
+  await waitFor(() => expect(screen.getAllByRole("alert")).toHaveLength(2));
+  expect(frequencies.slice(-2).map((f) => f.value)).toEqual([220, 165]);
+  click("Done reviewing · continue");
+  await sent("finishPeek");
+  cleanup();
+  await mount(fixture("peekReview", { identity: 1 }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(document.body.style.overflow).not.toBe("hidden");
+});
+test("vote stays focused and selected ballot survives another player's vote", async () => {
+  await mount(fixture("vote"));
+  expect(screen.getByRole("dialog", { name: "Cast your vote" })).toBeVisible();
+  click("Ja! YES");
+  current.version++;
+  current.voted = [current.players[1].id];
+  await reactAct(async () => poll());
+  expect(screen.getByRole("dialog")).toHaveTextContent("Vote Ja (Yes)?");
+  click("Change selection");
+  expect(screen.getByRole("dialog", { name: "Cast your vote" })).toBeVisible();
+  post.mockResolvedValueOnce(
+    response({ error: "Try your ballot again" }, false),
+  );
+  click("Nein NO");
+  await sent("vote", { yes: false });
+  expect(
+    screen.getByRole("dialog", { name: "Cast your vote" }),
+  ).toHaveTextContent("Try your ballot again");
+  click("How to play");
+  expect(screen.getByRole("dialog", { name: "How to play" })).toBeVisible();
+});
 test("lobby host badge and ordinary modal Tab navigation", async () => {
   const g = lobby();
   await mount(view(g, g.host));
@@ -91,7 +192,9 @@ test("lobby host badge and ordinary modal Tab navigation", async () => {
   expect(screen.getByRole("dialog")).toBeVisible();
 });
 async function sent(type, extra = {}) {
-  const confirm = screen.queryByRole("button", { name: "Confirm selection" });
+  const confirm = screen.queryByRole("button", {
+    name: /Confirm selection|Confirm Discarding/,
+  });
   if (confirm) fireEvent.click(confirm);
   await waitFor(() =>
     expect(post).toHaveBeenCalledWith(
@@ -129,6 +232,8 @@ test("selection popup can be cancelled, keeps focus inside, and clears on a newe
     screen.getByRole("button", { name: "Confirm selection" }),
   ).toHaveFocus();
   current.version++;
+  current.phase = "vote";
+  current.voted = [current.me.id];
   await reactAct(async () => poll());
   expect(screen.queryByRole("dialog")).toBeNull();
   expect(post).not.toHaveBeenCalled();
